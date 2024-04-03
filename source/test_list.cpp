@@ -5,28 +5,39 @@
 int main()
 {
     List *lst = listCtor(2);
+    Data data = {};
 
     LIST_DUMP(lst);
 
-    listPushBack(lst, 3);
+    dataAssign(&data, "a", 1);
+    printf("<%s>\n", data.str);
+    dataFprintf(&data, stdout);
+    printf("\n");
+    listPushBack(lst, &data);
+    printf("%s\n", lst->nodes[1].data.str);
     LIST_DUMP(lst);
 
-    listPushFront(lst, 6);
+    dataAssign(&data, "b", 2);
+    listPushFront(lst, &data);
     LIST_DUMP(lst);
 
-    listAddAfter(lst, 2, 7);
+    dataAssign(&data, "c", 3);
+    listAddAfter(lst, 2, &data);
     LIST_DUMP(lst);
 
     listDel(lst, 3);
     LIST_DUMP(lst);
 
-    listPushFront(lst, 18);
+    dataAssign(&data, "18", 4);
+    listPushFront(lst, &data);
     LIST_DUMP(lst);
 
-    listPushBack(lst, 19);
+    dataAssign(&data, "19", 5);
+    listPushBack(lst, &data);
     LIST_DUMP(lst);
 
-    listAddBefore(lst, 4, 23);
+    dataAssign(&data, "23", 6);
+    listAddBefore(lst, 4, &data);
     LIST_DUMP(lst);
 
     listDel(lst, 3);

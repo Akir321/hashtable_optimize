@@ -1,9 +1,13 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../include/html_logfile.h"
 #include "../include/list.h"
+
+
+const Data Poison = {NULL, -1, -1};
 
 
 #define LIST_VERIFY            \
@@ -13,6 +17,43 @@
         return listError(list);\
     }
 
+
+void dataFprintf(const Data *data, FILE *file)
+{
+    assert(data);
+
+    fprintf(file, "<%s> %d %d", data->str, data->strLength, data->amount);
+}
+
+void dataAssign(Data *data, const char *key, val_t val)
+{
+    assert(data);
+
+    LOG("key = %s\n", key);
+
+    data->strLength = (int)   strlen(key);
+    data->str       = (char *)calloc(data->strLength + 1, sizeof(char));
+    memcpy(data->str, key, data->strLength);
+
+    data->amount    = val;
+}
+
+void dataDtor(Data *data)
+{
+    assert(data);
+
+    free(data->str);
+    data->strLength = -1;
+    data->amount    = -1;
+}
+
+void dataCopy(Data *dst, const Data *src)
+{
+    assert(dst);
+    assert(src);
+
+    memmove(dst, src, sizeof(Data));
+}
 
 List *listCtor(int capacity)
 {
@@ -28,7 +69,7 @@ List *listCtor(int capacity)
     if (!list->nodes) { perror("data->next:"); return NULL; }
 
 
-    list->nodes[0].data = Poison;
+    dataCopy(&list->nodes[0].data, &Poison);
     list->nodes[0].next = 0;      //head
     list->nodes[0].prev = 0;      //tail
 
@@ -53,6 +94,11 @@ int listDtor(List **listPtr)
     list->capacity = 0;
     list->size     = -1;
 
+    for (int i = 1; i <= list->capacity; i++)
+    {
+        dataDtor(&list->nodes[i].data);
+    }
+
     free(list->nodes);
     list->nodes = NULL;
 
@@ -68,7 +114,7 @@ int listError(List *list)
 
     if (!list->nodes) return LIST_NODES_NULL;
 
-    if (list->capacity < list->size)    return LIST_OVERFLOW;
+    if (list->capacity < list->size)          return LIST_OVERFLOW;
 
     if (list->nodes[0].next > list->capacity) return LIST_BAD_VARIABLES;
     if (list->nodes[0].prev > list->capacity) return LIST_BAD_VARIABLES;
@@ -77,7 +123,7 @@ int listError(List *list)
     int current = list->nodes[0].next;
     while (listNextIndex(list, current) > 0)
     {
-        elem_t nextElem = listNextIndex(list, current);
+        int nextElem = listNextIndex(list, current);
         if (current != listPrevIndex(list, nextElem)) return LIST_BAD_POINTERS;
 
         current = nextElem;
@@ -110,15 +156,16 @@ int listDump(List *list, const char *file, int line, const char *function)
         else if (list->nodes[i].prev >= 0) LOG("*")
         else                               LOG(" ")
 
-        LOG("[%2d] " elemFormat " %5d %5d\n", 
-            i, list->nodes[i].data, list->nodes[i].next, list->nodes[i].prev);
+        LOG("[%2d] ",i);
+        dataFprintf(&list->nodes[i].data, LogFile);
+        LOG(" %5d %5d\n", list->nodes[i].next, list->nodes[i].prev);
     }
     LOG("\n\n");
 
     return EXIT_SUCCESS;
 }
 
-int listAddAfter(List *list, int arrayAnchorIndex, elem_t value)
+int listAddAfter(List *list, int arrayAnchorIndex, elem_t *value)
 {
     LIST_VERIFY;
 
@@ -135,7 +182,7 @@ int listAddAfter(List *list, int arrayAnchorIndex, elem_t value)
     int index      =  list->freeHead;
     list->freeHead = -list->nodes[index].next;
 
-    list->nodes[index].data = value;
+    dataCopy(&list->nodes[index].data, value);
 
     list->nodes[index].next            = list->nodes[arrayAnchorIndex].next;
     int nextIndex                      = list->nodes[index].next;
@@ -150,17 +197,17 @@ int listAddAfter(List *list, int arrayAnchorIndex, elem_t value)
     return index;
 }
 
-int listAddBefore(List *list, int arrayAnchorIndex, elem_t value)
+int listAddBefore(List *list, int arrayAnchorIndex, elem_t *value)
 {
     return listAddAfter(list, listPrevIndex(list, arrayAnchorIndex), value);
 }
 
-int listPushFront(List *list, elem_t value)
+int listPushFront(List *list, elem_t *value)
 {
     return listAddAfter(list, 0, value);
 }
 
-int listPushBack(List *list, elem_t value)
+int listPushBack(List *list, elem_t *value)
 {
     return listAddBefore(list, 0, value);
 }
@@ -179,7 +226,7 @@ int listDel(List *list, int arrayElemIndex)
     list->nodes[indexPrev].next = indexNext;
     list->nodes[indexNext].prev = indexPrev;
 
-    list->nodes[arrayElemIndex].data = Poison;
+    dataCopy(&list->nodes[arrayElemIndex].data, &Poison);
     list->nodes[arrayElemIndex].prev = -1;
     list->nodes[arrayElemIndex].next = -list->freeHead;
     list->freeHead                   = arrayElemIndex;
@@ -207,7 +254,7 @@ int listReallocUp(List *list, int reallocRate)
 
     for (int i = prevCapacity + 1; i <= list->capacity; i++)
     {
-        list->nodes[i].data = Poison;
+        dataCopy(&list->nodes[i].data, &Poison);
         list->nodes[i].next = - i - 1;
         list->nodes[i].prev =     - 1;
     }

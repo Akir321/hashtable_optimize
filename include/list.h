@@ -3,10 +3,20 @@
 
 #include <stddef.h>
 
-typedef int elem_t;
-#define elemFormat "%5d"
+typedef int val_t;
 
-const int Poison          = -1;
+struct Data
+{
+    char *str;
+    int   strLength;
+
+    val_t amount;
+};
+
+
+
+typedef Data elem_t;
+
 const int ListReallocRate =  2;
 
 #define LIST_DUMP(list) listDump(list, __FILE__,  __LINE__, __func__)
@@ -45,6 +55,14 @@ enum listErrors
     LIST_BAD_CAPACITY   = -9
 };
 
+void dataFprintf(const Data *data, FILE *file);
+
+void dataAssign(Data *data, const char *key, val_t val);
+
+void dataDtor  (Data *data);
+
+void dataCopy  (Data *dst, const Data *src);
+
 /**
  * @brief creates a List object and returns a pointer to it
  * 
@@ -61,11 +79,11 @@ List *listCtor(int capacity);
  */
 int listDtor (List **listPtr);
 /**
- * @brief determines if an error occured to the List
+ * @brief determines if an error occurred to the List
  * 
  * @param [in] list a pointer to the List to verify
- * @return 0 if no errors occured
- * @return negative int value (error code) if an error occured
+ * @return 0 if no errors occurred
+ * @return negative int value (error code) if an error occurred
  */
 int listError(List *list);
 /**
@@ -76,8 +94,8 @@ int listError(List *list);
  * @param [in] line the number of line from which listDump() is called
  * @param [in] function a str with the name of function from which listDump() is called
  * 
- * @return 0 if no errors occured
- * @return negative int value (error code) if an error occured
+ * @return 0 if no errors occurred
+ * @return negative int value (error code) if an error occurred
  */
 int listDump (List *list, const char *file, int line, const char *function);
 
@@ -163,8 +181,8 @@ int listDump (List *list, const char *file, int line, const char *function);
  * @param [in] arrayIndex index of the elem which data is to be determined 
  * @return elem_t data of the given element
  */
-#define listValueByIndex(lst, arrIndex) \
-        lst->nodes[arrIndex].data
+#define listValuePtrByIndex(lst, arrIndex) \
+        &lst->nodes[arrIndex].data
 //elem_t listValueByIndex(List *list, int arrayIndex);
 
 /**
@@ -174,7 +192,7 @@ int listDump (List *list, const char *file, int line, const char *function);
  * @param [in] value data of the new element
  * @return int index of the new element in arrays of the List
  */
-int listPushFront(List *list, elem_t value);
+int listPushFront(List *list, elem_t *value);
 /**
  * @brief adds a new element to List, it becomes new tail
  * 
@@ -182,9 +200,9 @@ int listPushFront(List *list, elem_t value);
  * @param [in] value data of the new element
  * 
  * @return int index of the new element in arrays of the List
- * @return negative int if an error occured
+ * @return negative int if an error occurred
  */
-int listPushBack (List *list, elem_t value);
+int listPushBack (List *list, elem_t *value);
 /**
  * @brief adds a new element to the List after the anchor element
  * 
@@ -193,9 +211,9 @@ int listPushBack (List *list, elem_t value);
  * @param [in] value data of the new element
  * 
  * @return int index of the new element in arrays of the List
- * @return negative int if an error occured
+ * @return negative int if an error occurred
  */
-int listAddAfter (List *list, int arrayAnchorIndex, elem_t value);
+int listAddAfter(List *list, int arrayAnchorIndex, elem_t *value);
 /**
  * @brief adds a new element to the List before the anchor element
  * 
@@ -204,9 +222,9 @@ int listAddAfter (List *list, int arrayAnchorIndex, elem_t value);
  * @param [in] value data of the new element
  * 
  * @return int index of the new element in arrays of the List
- * @return negative int if an error occured
+ * @return negative int if an error occurred
  */
-int listAddBefore(List *list, int arrayAnchorIndex, elem_t value);
+int listAddBefore(List *list, int arrayAnchorIndex, elem_t *value);
 /**
  * @brief deletes an element by its index in arrays of the List
  * 
@@ -214,7 +232,7 @@ int listAddBefore(List *list, int arrayAnchorIndex, elem_t value);
  * @param [in] arrElemIndex index of the element to delete in arrays  of the List
  * 
  * @return int index of the deleted element
- * @return negative int if an error occured
+ * @return negative int if an error occurred
  */
 int listDel      (List *list, int arrElemIndex);
 
@@ -224,8 +242,8 @@ int listDel      (List *list, int arrElemIndex);
  * @param [in] list a pointer to the List which capacity to increase
  * @param [in] reallocRate int constant by which to multiply the capacity
  * 
- * @return 0 if no error occured
- * @return negative int (error code) if an error occured
+ * @return 0 if no error occurred
+ * @return negative int (error code) if an error occurred
  */
 int listReallocUp(List *list, int reallocRate);
 
