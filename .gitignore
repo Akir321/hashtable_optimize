@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+test_list
+
+
+# Logs
+*.html
