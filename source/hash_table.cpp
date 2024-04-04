@@ -60,6 +60,29 @@ int hashTableDtor(HashTable **htPtr)
     return EXIT_SUCCESS;
 }
 
+int hashTableDump(HashTable *ht, const char *file, int line, const char *function)
+{
+    assert(ht);
+
+    LOG("I'm hashTableDump() called from %s %s(%d)\n", function, file, line);
+
+    LOG(" chains num       = %d\n", ht->chainsNum);
+    LOG(" size (don't use) = %d\n", ht->size);
+
+    LOG(" hash func        = %p\n", ht->hashFunc);
+
+    LOG("Lists:\n\n");
+    for (int i = 0; i < ht->chainsNum; i++)
+    {
+        LOG("List %d:\n", i);
+        listDump(ht->chains[i], file, line, function);
+    }
+    LOG("\n\n\n");
+
+    return EXIT_SUCCESS;
+}
+
+
 static Data *hashTableGetElemPtr(HashTable *ht, const char *key, List **outListPtr)
 {
     ASSERT_HT;
@@ -131,7 +154,7 @@ int hashTableIncValByKey(HashTable *ht, const char *key)
     ASSERT_HT;
     assert(key);
 
-    Data *elemPtr = hashTableGetElemPtr(ht, key, NULL);val_t valBuf  = 1;
+    Data *elemPtr = hashTableGetElemPtr(ht, key, NULL);
 
     if (!elemPtr) return HT_KEY_NOT_PRESENT;
     

@@ -22,14 +22,12 @@ void dataFprintf(const Data *data, FILE *file)
 {
     assert(data);
 
-    fprintf(file, "<%s> %d %d", data->str, data->strLength, data->value);
+    fprintf(file, "([\"%s\"](%d) = %d)", data->str, data->strLength, data->value);
 }
 
 void dataAssign(Data *data, const char *key, val_t val)
 {
     assert(data);
-
-    LOG("key = %s\n", key);
 
     data->strLength = (int)   strlen(key);
     data->str       =         strdup(key);

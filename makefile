@@ -14,35 +14,49 @@ OBJ_DIR  = object/
 DMP_DIR  = gr_dump/
 LOG_DIR  = log/
 
-INCLUDES =  $(INC_DIR)list.h           \
-			$(INC_DIR)html_logfile.h   \
+INCLUDES =  $(INC_DIR)list.h             \
+            $(INC_DIR)hash_table.h       \
+			$(INC_DIR)html_logfile.h     \
 
-OBJECTS  =  $(OBJ_DIR)test_list.o      \
-		    $(OBJ_DIR)list.o           \
-			$(OBJ_DIR)html_logfile.o   \
+OBJECTS  =  $(OBJ_DIR)list.o             \
+			$(OBJ_DIR)hash_table.o       \
+			$(OBJ_DIR)html_logfile.o     \
+			$(OBJ_DIR)debug_hash_table.o \
+#			$(OBJ_DIR)test_list.o        \
 
-DUMPS    =  $(DMP_DIR)*.dot            \
+DUMPS    =  $(DMP_DIR)*.dot              \
 			$(DMP_DIR)*.png
 
-LOGS     =  $(LOG_DIR)*.txt            \
-			$(LOG_DIR)*.log            \
+LOGS     =  $(LOG_DIR)*.txt              \
+			$(LOG_DIR)*.log              \
 			$(LOG_DIR)*.html   
 
-EXEC     =  test_list                  \
+EXEC     =  test_list                    \
+            test_hash_table              \
 
-all: test_list
+all: debug_hash_table
 
-test_list: $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@ $(CXX_FLAGS)
+test_list:        $(OBJECTS)
+	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
+
+debug_hash_table: $(OBJECTS)
+	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
 
 
-$(OBJ_DIR)test_list.o:    $(SRC_DIR)test_list.cpp    $(INCLUDES) 
+$(OBJ_DIR)test_list.o:        $(SRC_DIR)test_list.cpp        $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
-$(OBJ_DIR)list.o:         $(SRC_DIR)list.cpp         $(INCLUDES) 
+$(OBJ_DIR)debug_hash_table.o: $(SRC_DIR)debug_hash_table.cpp $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
-$(OBJ_DIR)html_logfile.o: $(SRC_DIR)html_logfile.cpp $(INCLUDES)
+
+$(OBJ_DIR)list.o:             $(SRC_DIR)list.cpp             $(INCLUDES) 
+	$(CXX) -c $< -o $@ $(CXX_FLAGS)
+
+$(OBJ_DIR)hash_table.o:       $(SRC_DIR)hash_table.cpp       $(INCLUDES) 
+	$(CXX) -c $< -o $@ $(CXX_FLAGS)
+
+$(OBJ_DIR)html_logfile.o:     $(SRC_DIR)html_logfile.cpp     $(INCLUDES)
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
 

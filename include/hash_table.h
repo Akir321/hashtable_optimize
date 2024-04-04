@@ -5,7 +5,7 @@
 #include "list.h"
 
 
-const int StartListCapacity = 8;
+const int StartListCapacity = 2;
 
 
 struct HashTable
@@ -23,10 +23,15 @@ enum HashTableErrors
     HT_KEY_NOT_PRESENT = -1,
 };
 
+#define HASH_TABLE_DUMP(ht) hashTableDump(ht, __FILE__,  __LINE__, __func__)
+
 
 HashTable *hashTableCtor (int chainsNum, int (*hashFunc)(const char *));
 
 int hashTableDtor             (HashTable **htPtr);
+
+int hashTableDump             (HashTable *ht, 
+                               const char *file, int line, const char *function);
 
 int hashTableSet              (HashTable *ht, const char *key, val_t *valBuf);
 int hashTableGet              (HashTable *ht, const char *key, val_t *valBuf);
