@@ -22,7 +22,7 @@ void dataFprintf(const Data *data, FILE *file)
 {
     assert(data);
 
-    fprintf(file, "<%s> %d %d", data->str, data->strLength, data->amount);
+    fprintf(file, "<%s> %d %d", data->str, data->strLength, data->value);
 }
 
 void dataAssign(Data *data, const char *key, val_t val)
@@ -32,10 +32,9 @@ void dataAssign(Data *data, const char *key, val_t val)
     LOG("key = %s\n", key);
 
     data->strLength = (int)   strlen(key);
-    data->str       = (char *)calloc(data->strLength + 1, sizeof(char));
-    memcpy(data->str, key, data->strLength);
+    data->str       =         strdup(key);
 
-    data->amount    = val;
+    data->value     = val;
 }
 
 void dataDtor(Data *data)
@@ -44,7 +43,7 @@ void dataDtor(Data *data)
 
     free(data->str);
     data->strLength = -1;
-    data->amount    = -1;
+    data->value     = -1;
 }
 
 void dataCopy(Data *dst, const Data *src)
@@ -233,8 +232,8 @@ int listDel(List *list, int arrayElemIndex)
 {
     LIST_VERIFY;
 
-    if (arrayElemIndex <= 0)              return LIST_INVALID_INDEX;
-    if (arrayElemIndex >= list->capacity) return LIST_INVALID_INDEX;
+    if (arrayElemIndex <= 0)                    return LIST_INVALID_INDEX;
+    if (arrayElemIndex >= list->capacity)       return LIST_INVALID_INDEX;
     if (list->nodes[arrayElemIndex].prev == -1) return LIST_INVALID_INDEX;
 
     int indexPrev = list->nodes[arrayElemIndex].prev;

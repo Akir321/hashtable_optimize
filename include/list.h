@@ -10,7 +10,7 @@ struct Data
     char *str;
     int   strLength;
 
-    val_t amount;
+    val_t value;
 };
 
 
