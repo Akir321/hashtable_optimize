@@ -55,6 +55,23 @@ void dataCopy(Data *dst, const Data *src)
     memmove(dst, src, sizeof(Data));
 }
 
+int listFindKey(List *list, const char *key)
+{
+    assert(list);
+    assert(key);
+
+    int current = list->nodes[0].next;
+    while (current > 0)
+    {
+        if (strcmp(list->nodes[current].data.str, key) == 0)
+          { return current; }
+
+        current = listNextIndex(list, current);
+    }
+
+    return 0;
+}
+
 List *listCtor(int capacity)
 {
     List *list = (List *)calloc(1, sizeof(List));

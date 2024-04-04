@@ -44,8 +44,8 @@ struct List
 
 enum listErrors
 {
-    LIST_MEMORY_ERROR   = -1,
-    LIST_NODES_NULL     = -2,
+    LIST_MEMORY_ERROR   = -2,
+    LIST_NODES_NULL     = -3,
     
 
     LIST_OVERFLOW       = -5,
@@ -62,6 +62,8 @@ void dataAssign(Data *data, const char *key, val_t val);
 void dataDtor  (Data *data);
 
 void dataCopy  (Data *dst, const Data *src);
+
+int listFindKey(List *list, const char *key);
 
 /**
  * @brief creates a List object and returns a pointer to it

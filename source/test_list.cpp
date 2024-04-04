@@ -36,6 +36,10 @@ int main()
     listPushBack(lst, &data);
     LIST_DUMP(lst);
 
+    printf("key = %3s, index = %3d\n", "a", listFindKey(lst, "a"));
+    printf("key = %3s, index = %3d\n", "19", listFindKey(lst, "19"));
+    printf("key = %3s, index = %3d\n", "bb", listFindKey(lst, "bb"));
+
     dataAssign(&data, "23", 6);
     listAddBefore(lst, 4, &data);
     LIST_DUMP(lst);
