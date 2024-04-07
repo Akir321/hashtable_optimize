@@ -162,7 +162,7 @@ int listDump (List *list, const char *file, int line, const char *function);
  * @return int index of the next element
  */
 #define listNextIndex(lst, arrIndex) \
-        lst->nodes[arrIndex].next
+        (lst && arrIndex <= listSize(lst) ? lst->nodes[arrIndex].next : 0)
 //int listNextIndex   (List *list, int arrayIndex);
 
 
@@ -174,7 +174,7 @@ int listDump (List *list, const char *file, int line, const char *function);
  * @return int index of the next element
  */
 #define listPrevIndex(lst, arrIndex) \
-        lst->nodes[arrIndex].prev
+        (lst && arrIndex <= listSize(lst) ? lst->nodes[arrIndex].prev : 0)
 //int listPrevIndex   (List *list, int arrayIndex);
 /**
  * @brief returns data of the given element in a List
@@ -184,7 +184,7 @@ int listDump (List *list, const char *file, int line, const char *function);
  * @return elem_t data of the given element
  */
 #define listValuePtrByIndex(lst, arrIndex) \
-        &lst->nodes[arrIndex].data
+        (lst && arrIndex <= listSize(lst) ? &lst->nodes[arrIndex].data  : NULL)
 //elem_t listValueByIndex(List *list, int arrayIndex);
 
 /**
