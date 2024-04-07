@@ -88,7 +88,7 @@ static Data *hashTableGetElemPtr(HashTable *ht, const char *key, List **outListP
     ASSERT_HT;
     assert(key);
 
-    int listIndex = ht->hashFunc(key) % ht->chainsNum;
+    unsigned listIndex = (unsigned)(ht->hashFunc(key)) % ht->chainsNum;
     List *curList = ht->chains[listIndex];
 
     if (outListPtr) *outListPtr = curList;
@@ -137,7 +137,7 @@ int hashTableKeyDel(HashTable *ht, const char *key)
     ASSERT_HT;
     assert(key);
 
-    int listIndex = ht->hashFunc(key) % ht->chainsNum;
+    unsigned listIndex = (unsigned)(ht->hashFunc(key)) % ht->chainsNum;
     List *curList = ht->chains[listIndex];
 
     int elemIndex = listFindKey(curList, key);
