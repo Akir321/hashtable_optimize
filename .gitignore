@@ -33,6 +33,10 @@
 
 test_list
 debug_hash_table
+test_hash_func
+
+# Test results
+*.csv
 
 
 # Logs

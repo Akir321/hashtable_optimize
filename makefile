@@ -17,11 +17,13 @@ LOG_DIR  = log/
 INCLUDES =  $(INC_DIR)list.h             \
             $(INC_DIR)hash_table.h       \
 			$(INC_DIR)html_logfile.h     \
+			$(INC_DIR)hash_functions.h   \
 
 OBJECTS  =  $(OBJ_DIR)list.o             \
 			$(OBJ_DIR)hash_table.o       \
 			$(OBJ_DIR)html_logfile.o     \
-			$(OBJ_DIR)debug_hash_table.o \
+			$(OBJ_DIR)hash_func_test.o   \
+#			$(OBJ_DIR)debug_hash_table.o \
 #			$(OBJ_DIR)test_list.o        \
 
 DUMPS    =  $(DMP_DIR)*.dot              \
@@ -33,8 +35,9 @@ LOGS     =  $(LOG_DIR)*.txt              \
 
 EXEC     =  test_list                    \
             test_hash_table              \
+			test_hash_func               \
 
-all: debug_hash_table
+all: test_hash_func
 
 test_list:        $(OBJECTS)
 	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
@@ -42,11 +45,17 @@ test_list:        $(OBJECTS)
 debug_hash_table: $(OBJECTS)
 	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
 
+test_hash_func:   $(OBJECTS)
+	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
+
 
 $(OBJ_DIR)test_list.o:        $(SRC_DIR)test_list.cpp        $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
 $(OBJ_DIR)debug_hash_table.o: $(SRC_DIR)debug_hash_table.cpp $(INCLUDES) 
+	$(CXX) -c $< -o $@ $(CXX_FLAGS)
+
+$(OBJ_DIR)hash_func_test.o:   $(SRC_DIR)hash_func_test.cpp   $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
 
