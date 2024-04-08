@@ -7,9 +7,10 @@
 
 const int KeyStrLength = 256;
 
-const int ChainsNum    = 599;
+const int ChainsNum         = 0x1000;  //4096
+const int ChainsNumChecksum = 599;
 
-const char *FileNameIn = "romeo.txt";
+const char *FileNameIn = "words_25000.txt";
 
 #define DATA_DIR  "hash_data/"
 #define OUT_EXTEN ".csv"
@@ -34,7 +35,7 @@ int main()
 
     TEST_HASH_FUNC(ChainsNum, hashChecksum);
 
-    //TEST_HASH_FUNC(1000000,   hashChecksum);
+    //TEST_HASH_FUNC(ChainsNumChecksum,   hashChecksum);
 
     TEST_HASH_FUNC(ChainsNum, hashKeyLength);
 
