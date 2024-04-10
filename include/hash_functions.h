@@ -1,8 +1,10 @@
 #ifndef  __HASH_FUNCTIONS_H__
 #define  __HASH_FUNCTIONS_H__
 
+#include <stdint.h>
+
 #ifndef  HASH_MOD
-#define  HASH_MOD 4096
+#define  HASH_MOD 9973
 #endif //HASH_MOD
 
 
@@ -52,8 +54,7 @@ int hashRorXor(const char *key)
 
     while (*key != '\0')
     {
-        hash = ror_32t((unsigned)hash) ^ *key;
-        key++;
+        hash = ror_32t(hash) ^ *key++;
     }
 
     return hash;
@@ -77,7 +78,7 @@ int hashGNU(const char *key)
 
     while(*key != '\0')
     {
-        hash = (hash << 5) + hash; // hash = hash * 33;
+        hash = (hash << 7) - hash; // hash = hash * 127;
         hash = hash + *key++;
         hash = hash % HASH_MOD;
     }
@@ -85,12 +86,12 @@ int hashGNU(const char *key)
     return hash;
 }
 
-unsigned ror_32t(unsigned num)
+uint32_t ror_32t(uint32_t num)
 {
     return (num >> 1) + (num << (sizeof(num) * 8 - 1));
 }
 
-unsigned rol_32t(unsigned num)
+uint32_t rol_32t(uint32_t num)
 {
     return (num << 1) + (num >> (sizeof(num) * 8 - 1));
 }

@@ -7,10 +7,10 @@
 
 const int KeyStrLength = 256;
 
-const int ChainsNum         = 0x1000;  //4096
+const int ChainsNum         = 9973;
 const int ChainsNumChecksum = 599;
 
-const char *FileNameIn = "words_25000.txt";
+const char *FileNameIn = "words_changed.txt";
 
 #define DATA_DIR  "hash_data/"
 #define OUT_EXTEN ".csv"
