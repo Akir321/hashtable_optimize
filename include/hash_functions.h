@@ -16,8 +16,8 @@ int hashRorXor      (const char *key);
 int hashRolXor      (const char *key);
 int hashGNU         (const char *key);
 
-unsigned ror_32t(unsigned num);
-unsigned rol_32t(unsigned num);
+uint32_t ror_32t(uint32_t num);
+uint32_t rol_32t(uint32_t num);
 
 
 int hashAlways1(const char *key)
@@ -78,7 +78,7 @@ int hashGNU(const char *key)
 
     while(*key != '\0')
     {
-        hash = (hash << 7) - hash; // hash = hash * 127;
+        hash = (hash << 5) - hash; // hash = hash * 31;
         hash = hash + *key++;
         hash = hash % HASH_MOD;
     }
