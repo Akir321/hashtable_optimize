@@ -6,7 +6,7 @@ CXX_FLAGS = -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
  -Wno-missing-field-initializers -Wnon-virtual-dtor -Woverloaded-virtual\
  -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing\
  -Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG\
- -D_EJUDGE_CLIENT_SIDE 
+ -D_EJUDGE_CLIENT_SIDE -O3 -mavx2
 
 INC_DIR  = include/
 SRC_DIR  = source/
@@ -22,7 +22,6 @@ INCLUDES =  $(INC_DIR)list.h             \
 OBJECTS  =  $(OBJ_DIR)list.o             \
 			$(OBJ_DIR)hash_table.o       \
 			$(OBJ_DIR)html_logfile.o     \
-			$(OBJ_DIR)hash_func_test.o   \
 #			$(OBJ_DIR)debug_hash_table.o \
 #			$(OBJ_DIR)test_list.o        \
 
@@ -36,8 +35,9 @@ LOGS     =  $(LOG_DIR)*.txt              \
 EXEC     =  test_list                    \
             test_hash_table              \
 			test_hash_func               \
+			test_time                    \
 
-all: test_hash_func
+all: test_time
 
 test_list:        $(OBJECTS)
 	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
@@ -45,8 +45,11 @@ test_list:        $(OBJECTS)
 debug_hash_table: $(OBJECTS)
 	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
 
-test_hash_func:   $(OBJECTS)
-	$(CXX)        $(OBJECTS) -o $@ $(CXX_FLAGS)
+test_hash_func:   $(OBJ_DIR)hash_func_test.o $(OBJECTS)
+	$(CXX) $<     $(OBJECTS) -o $@ $(CXX_FLAGS)
+
+test_time:        $(OBJ_DIR)ht_time_test.o   $(OBJECTS)  
+	$(CXX) $<     $(OBJECTS) -o $@ $(CXX_FLAGS)
 
 
 $(OBJ_DIR)test_list.o:        $(SRC_DIR)test_list.cpp        $(INCLUDES) 
@@ -56,6 +59,9 @@ $(OBJ_DIR)debug_hash_table.o: $(SRC_DIR)debug_hash_table.cpp $(INCLUDES)
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
 $(OBJ_DIR)hash_func_test.o:   $(SRC_DIR)hash_func_test.cpp   $(INCLUDES) 
+	$(CXX) -c $< -o $@ $(CXX_FLAGS)
+
+$(OBJ_DIR)ht_time_test.o:     $(SRC_DIR)ht_time_test.cpp     $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
 
 
@@ -81,6 +87,4 @@ clean_dumps:
 clean_logs:
 	rm $(LOG_DIR)*.html
 
-
-DOT_DIR = dot_tests/
 

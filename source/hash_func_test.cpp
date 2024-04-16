@@ -7,7 +7,7 @@
 
 const int KeyStrLength = 256;
 
-const int ChainsNum         = 9973;
+const int ChainsNum         = 8192;
 const int ChainsNumChecksum = 599;
 
 const char *FileNameIn = "words_changed.txt";
@@ -29,21 +29,25 @@ int outputListSizes(HashTable *ht, const char *fileNameOut);
 
 int main()
 {
-    TEST_HASH_FUNC(ChainsNum, hashAlways1);
+    //TEST_HASH_FUNC(ChainsNum, hashAlways1);
 
-    TEST_HASH_FUNC(ChainsNum, hashFirstLetter);
+    //TEST_HASH_FUNC(ChainsNum, hashFirstLetter);
 
-    TEST_HASH_FUNC(ChainsNum, hashChecksum);
+    //TEST_HASH_FUNC(ChainsNum, hashChecksum);
 
     //TEST_HASH_FUNC(ChainsNumChecksum,   hashChecksum);
 
-    TEST_HASH_FUNC(ChainsNum, hashKeyLength);
+    //TEST_HASH_FUNC(ChainsNum, hashKeyLength);
 
-    TEST_HASH_FUNC(ChainsNum, hashRorXor);
+    //TEST_HASH_FUNC(ChainsNum, hashRorXor);
 
-    TEST_HASH_FUNC(ChainsNum, hashRolXor);
+    //TEST_HASH_FUNC(ChainsNum, hashRolXor);
 
     TEST_HASH_FUNC(ChainsNum, hashGNU);
+
+    TEST_HASH_FUNC(ChainsNum, hashCRC32);
+
+    TEST_HASH_FUNC(ChainsNum, hashCRC32Intrinsics);
 }
 
 

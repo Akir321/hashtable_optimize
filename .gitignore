@@ -34,11 +34,18 @@
 test_list
 debug_hash_table
 test_hash_func
+test_time
 
 # Test results
 *.csv
 
-
 # Logs
 *.html
 *.txt
+
+# Callgrind (profiler) out
+callgrind.out.*
+
+# Calculation tools
+average.cpp
+average

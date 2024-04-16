@@ -9,6 +9,8 @@
 
 const Data Poison = {NULL, -1, -1};
 
+static char *myStrdupLen32(const char *key);
+
 
 #define LIST_VERIFY            \
     if (listError(list))       \
@@ -30,7 +32,7 @@ void dataAssign(Data *data, const char *key, val_t val)
     assert(data);
 
     data->strLength = (int)   strlen(key);
-    data->str       =         strdup(key);
+    data->str       =         myStrdupLen32(key);
 
     data->value     = val;
 }
@@ -275,4 +277,16 @@ int listReallocUp(List *list, int reallocRate)
 
     LIST_VERIFY;
     return EXIT_SUCCESS;
+}
+
+static char *myStrdupLen32(const char *key)
+{
+    assert(key);
+
+    char *dupStr = (char *)calloc(32 + 1, sizeof(char));
+    if (!dupStr) return NULL;
+
+    strncpy(dupStr, key, 32);
+
+    return dupStr;
 }
