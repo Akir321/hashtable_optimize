@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
-        "godbolt"
+        "godbolt",
+        "noprefix",
+        "strcmp"
     ]
 }

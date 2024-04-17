@@ -9,7 +9,9 @@
 
 const Data Poison = {NULL, -1, -1};
 
-static char *myStrdupLen32(const char *key);
+static        char *myStrdupLen32(const char *key);
+
+static inline bool  stringsEqualAsm  (const char *str1, const char *str2);
 
 
 #define LIST_VERIFY            \
@@ -62,7 +64,7 @@ int listFindKey(List *list, const char *key)
     int current = list->nodes[0].next;
     while (current > 0)
     {
-        if (strcmp(list->nodes[current].data.str, key) == 0)
+        if (stringsEqualAsm(list->nodes[current].data.str, key))
           { return current; }
 
         current = listNextIndex(list, current);
@@ -289,4 +291,31 @@ static char *myStrdupLen32(const char *key)
     strncpy(dupStr, key, 32);
 
     return dupStr;
+}
+
+static inline bool stringsEqualAsm(const char *str1, const char *str2)
+{
+    assert(str1);
+    assert(str2);
+
+    bool equal = false;
+
+    __asm__ 
+    (
+        ".intel_syntax noprefix\n\t"
+
+        "vmovdqu ymm0, ymmword ptr [%1]\n\t" // read str1
+        "vmovdqu ymm1, ymmword ptr [%2]\n\t" // read str2
+
+        "vptest ymm0, ymm1\n\t"              // CF    = (str1 == str2)
+        "setc %b0\n\t"                       // equal = (str1 == str2)
+
+        ".att_syntax prefix\n\t"
+
+        : "+&r" (equal)
+        : "r" (str1), "r" (str2)
+        : "ymm0", "ymm1", "cc"
+    );
+
+    return equal;
 }
