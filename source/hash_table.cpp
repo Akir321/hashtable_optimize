@@ -13,6 +13,8 @@
 
 static Data *hashTableGetElemPtr(HashTable *ht, const char *key, List **outListPtr);
 
+extern "C" int listFindKeyAsm(List *list, const char *key);
+
 
 HashTable *hashTableCtor(int chainsNum, int (*hashFunc)(const char *))
 {
@@ -93,7 +95,7 @@ static Data *hashTableGetElemPtr(HashTable *ht, const char *key, List **outListP
 
     if (outListPtr) *outListPtr = curList;
 
-    int elemIndex = listFindKey(curList, key);
+    int elemIndex = listFindKeyAsm(curList, key);
     if (elemIndex == 0) return NULL;
 
     return listValuePtrByIndex(curList, elemIndex);

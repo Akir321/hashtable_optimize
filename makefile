@@ -22,6 +22,7 @@ INCLUDES =  $(INC_DIR)list.h             \
 OBJECTS  =  $(OBJ_DIR)list.o             \
 			$(OBJ_DIR)hash_table.o       \
 			$(OBJ_DIR)html_logfile.o     \
+			$(OBJ_DIR)listFindKey.o      \
 #			$(OBJ_DIR)debug_hash_table.o \
 #			$(OBJ_DIR)test_list.o        \
 
@@ -63,6 +64,9 @@ $(OBJ_DIR)hash_func_test.o:   $(SRC_DIR)hash_func_test.cpp   $(INCLUDES)
 
 $(OBJ_DIR)ht_time_test.o:     $(SRC_DIR)ht_time_test.cpp     $(INCLUDES) 
 	$(CXX) -c $< -o $@ $(CXX_FLAGS)
+
+$(OBJ_DIR)listFindKey.o:     $(SRC_DIR)listFindKey.asm       $(INCLUDES) 
+	nasm -f elf64 $< -o $@
 
 
 $(OBJ_DIR)list.o:             $(SRC_DIR)list.cpp             $(INCLUDES) 

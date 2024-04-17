@@ -425,3 +425,153 @@ static inline bool stringsEqualAsm(const char *str1, const char *str2)
 | Изначальная версия | $1.00$                          | $1.00$                           |
 | crc32 Intrinsics   | $1.26$                          | $1.12$                           |
 | strcmp inline asm  | $1.75$                          | $1.39$                           |
+
+### 3. listFindKey()
+
+Теперь самой затратной функцией является `listFindKey()`.
+
+![profiler opt 2](./readme_assets/prof_opt2.png)
+
+Так выглядит ее код на Си:
+
+```
+int listFindKey(List *list, const char *key)
+{
+    int current = list->nodes[0].next;
+
+    while (current > 0)
+    {
+        if (stringsEqualAsm(list->nodes[current].data.str, key))
+          { return current; }
+
+        current = listNextIndex(list, current);
+    }
+
+    return 0;
+}
+```
+
+Посмотрим на ассемблерный листинг этой функции, который возьмем с сайта [godbolt.org](https://godbolt.org/).
+
+```
+listFindKey(List*, char const*):
+        mov     r9, QWORD PTR [rdi+16]  // r9  = &list->nodes
+        mov     eax, DWORD PTR [r9+16]  // eax = list->nodes[0].next (int current)
+        test    eax, eax
+        jle     .L5                     // if (current <= 0) return 0;
+        xor     r10d, r10d              // r10d = 0; (for setting edx to 0)
+        jmp     .L3
+.L8:
+        cmp     DWORD PTR [rdi], eax    // cmp(list->size, current)
+        jl      .L5                     // if (list->size < current) return 0;
+        mov     eax, DWORD PTR [rcx+16] // current = list->nodes[current].next
+        test    eax, eax              
+        jle     .L5                     // if (current == 0) return 0;
+.L3:
+        movsx   rdx, eax                // rdx = current
+        lea     rdx, [rdx+rdx*2]        // rdx = current * 3
+        lea     rcx, [r9+rdx*8]         // rcx = &list->nodes + 24 * current 
+                                        //        list->nodes[current];
+        mov     edx, r10d               // edx = 0;
+        mov     r8, QWORD PTR [rcx]     // r8  = list->nodes[current].data.str;
+
+    //  stringsEqualAsm inline
+        .intel_syntax noprefix          
+        vmovdqu ymm0, ymmword ptr [r8]  
+        vmovdqu ymm1, ymmword ptr [rsi] 
+        vptest  ymm0, ymm1
+        setc    dl                      // dl = (list->nodes[current].data.str == key);
+
+        test    dl, dl
+        je      .L8                     // if(!stringsEqualAsm(...)) continue;
+        ret                             // if( stringsEqualAsm(...)) return current;
+.L5:
+        xor     eax, eax
+        ret
+```
+
+Возможные пути оптимизации:
+
+1. В данном случае нам не нужно каждый раз сравнивать `current` с `list->size`, так как мы работаем с корректным списком. В нем для каждого элемента индекс следующего не превосходит размера списка, поэтому неравенство `current < list->size` выполнено всегда. 
+2. На каждом шаге мы сравниваем `key` с некоторой строкой, причем `key` не меняется во время работы функции. Поэтому достаточно выгрузить `key` в `YMM` регистр один раз перед циклом.
+3. Нет смысла устанавливать `dl` и делать `test dl, dl`, ведь можно использовать условный переход, связанный с CF.
+
+Перепишем функцию `listFindKey()` на ассемблере в отдельном файле. За основу возьмем ассемблерный листинг, внесем в него описанные изменения. Будем компилировать отдельно и линковать. Полученный код:
+
+```
+listFindKeyAsm:
+        mov     r9,  QWORD [rdi+16] ; r9  = &list->nodes
+        mov     eax, DWORD [r9+16]  ; eax = list->nodes[0].next (int current)
+        xor     r10d, r10d          ; r10d = 0; (for setting edx to 0)
+
+        vmovdqu ymm1, YWORD [rsi]   ; key is copied to ymm1 (for cmp)
+
+        test    eax, eax
+        jle     NotFound            ; if (current <= 0) return 0
+        jmp     StringsCmp
+
+    NextNode:
+        mov     eax, DWORD [rcx+16] ; current = list->nodes[current].next
+        test    eax, eax
+        jle     NotFound            ; if (current == 0) return 0;
+
+    StringsCmp:
+        movsx   rdx, eax            ; rdx = current
+        lea     rdx, [rdx+rdx*2]    ; rdx = current * 3
+        lea     rcx, [r9+rdx*8]     ; rcx = &list->nodes + 24 * current 
+                                    ;        list->nodes[current];
+        mov     edx, r10d           ; edx = 0;
+        mov     r8, QWORD [rcx]     ; r8  = list->nodes[current].data.str;
+
+        vmovdqu ymm0, YWORD [r8]    ; list->nodes[current].data.str is copied to ymm0
+        vptest ymm0, ymm1           ; CF = (list->nodes[current].data.str == key);
+        
+        jnc NextNode                ; if(!stringsEqualAsm(...)) continue;
+        ret                         ; if( stringsEqualAsm(...)) return current;
+
+    NotFound:
+        xor     eax, eax
+        ret
+```
+
+Проведем замеры времени. Характерное время работы программы 15 секунд.
+
+| Запуск    | strcmp inline asm |
+|:---------:|:------------------|
+| 1         | $39205536676$     |
+| 2         | $38964691074$     |
+| 3         | $39109040774$     |
+|**Среднее**| $(3909 \pm 12) \cdot 10^7$ |
+
+Сравнительная таблица:
+
+|                    | Относительно изначальной версии | Относительно прошлой оптимизации |
+|:------------------:|:-------------------------------:|:--------------------------------:|
+| Изначальная версия | $1.00$                          | $1.00$                           |
+| strcmp inline asm  | $1.75$                          | $1.39$                           |
+| ListFindKey nasm   | $2.03$                          | $1.16$                           |
+
+Мы выполнили учебную задачу, а именно применили все три заявленных метода оптимизации. Последняя оптимизация еще дала ощутимый прирост в производительности, поэтому разумно продолжить оптимизировать. Но мы пока остановимся на третьей оптимизации.
+
+### Сравнительный анализ оптимизаций
+
+Выполнив все описанные оптимизации, мы ускорили программу в 2 раза.
+
+Вспомним про коэффициент, введенный в начале второй части работы. Он показывает, насколько оптимальна данная оптимизация.
+
+$K = \frac{t}{t_0} \cdot \frac{1000}{AmountOfOptimizeLines}$, где $t_0$ и $t$ -- время работы программы до и после оптимизации, $AmountOfOptimizeLines$ -- количество строк, содержащих ассемблерный код и/или intrinsic функции и работу с ними. В сводной таблице обозначим $AmountOfOptimizeLines$ как $N$.
+
+|                    | Отн. изн. версии | Отн. прошл. опт. | N      | K        |
+|:------------------:|:----------------:|:----------------:|:------:|:--------:|
+| hashGNU (C only)   | $1.13$           | $1.13$           | $0$    | $\infty$ |
+| crc32 Intrinsics   | $1.26$           | $1.12$           | $4$    | $280$    |
+| strcmp inline asm  | $1.75$           | $1.39$           | $9$    | $154$    |
+| ListFindKey nasm   | $2.03$           | $1.16$           | $25$   | $46$     |
+
+Коэффициент примерно отражает баланс между ускорением, которое предоставляет данная оптимизация, и возможными ухудшениями читабельности, поддерживаемости кода, потерями переносимости из-за привязки к конкретной архитектуре. Из таблицы выше видно, что последняя оптимизация не является особенно выгодной, ведь в ней мы вынуждены были полностью переписать функцию на ассемблере, что ухудшило понимание кода и переносимость. Возможно, в некоторых ситуациях будет даже разумно отказаться от этой оптимизации. Но все же мы решили ее оставить, потому что прирост в производительности значительный.
+
+## Выводы
+
+В данной работе мы продемонстрировали пути оптимизации программы на примере хэш-таблицы. Мы убедились в том, что скорость поиска в хэш-таблице зависит от того, насколько равномерно хэш-функция распределяет ключи по спискам. Провели сравнение хэш-функций и подобрали  оптимальную.
+
+Кроме того, мы исследовали различные способы оптимизации исходного кода функций, такие, как intrinsic функции, встроенный ассемблер и написание функций на ассемблере в отдельном файле. В итоге нам удалось ускорить поиск в хэш-таблице в 2 раза. Но в таких оптимизациях важно сохранять баланс между ускорением и переносимостью и читаемостью кода, ведь ассемблер и intrinsic функции могут значительно ухудшать понимание кода.   
