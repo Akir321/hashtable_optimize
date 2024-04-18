@@ -22,7 +22,7 @@ listFindKeyAsm:
         movsx   rdx, eax            ; rdx = current
         lea     rdx, [rdx+rdx*2]    ; rdx = current * 3
         lea     rcx, [r9+rdx*8]     ; rcx = &list->nodes + 24 * current 
-                                    ;        list->nodes[current];
+                                    ;       &list->nodes[current];
         mov     edx, r10d           ; edx = 0;
         mov     r8, QWORD [rcx]     ; r8  = list->nodes[current].data.str;
 
